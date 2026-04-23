@@ -1,4 +1,4 @@
-# adobe-xd-mcp
+# xd-mcp
 
 A custom MCP server for extracting styling specifications and design tokens from Adobe XD files — built for use in Cursor to keep existing component styles in sync with your XD designs.
 

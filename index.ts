@@ -13,7 +13,7 @@ import { extractTokens } from './tools/extract-tokens';
 
 const server = new Server(
   {
-    name: 'adobe-xd-mcp',
+    name: 'xd-mcp',
     version: '1.0.0',
   },
   {

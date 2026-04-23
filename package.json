@@ -1,10 +1,10 @@
 {
-  "name": "adobe-xd-mcp",
+  "name": "xd-mcp",
   "version": "1.0.0",
   "description": "MCP server for extracting styling specs and design tokens from Adobe XD files",
   "main": "dist/index.js",
   "bin": {
-    "adobe-xd-mcp": "dist/index.js"
+    "xd-mcp": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",

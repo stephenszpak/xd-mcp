@@ -136,7 +136,7 @@ export function generateUpdatedScss(
   existingScss: Record<string, string>
 ): string {
   const lines: string[] = [];
-  lines.push('// Auto-updated by adobe-xd-mcp');
+  lines.push('// Auto-updated by xd-mcp');
   lines.push('// Review changes before committing');
   lines.push('');
 
