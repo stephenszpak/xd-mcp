@@ -10,6 +10,8 @@ import {
 import { listArtboards } from './tools/list-artboards';
 import { getArtboardSpecs } from './tools/get-artboard-specs';
 import { extractTokens } from './tools/extract-tokens';
+import { fetchFromXDShare } from './tools/fetch-from-xd-share';
+import { getSpecs } from './tools/get-specs';
 
 const server = new Server(
   {
@@ -28,9 +30,30 @@ const server = new Server(
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
     {
+      name: 'get_specs',
+      description:
+        'PRIMARY TOOL — use this whenever a user asks about XD design specs, styles, or component styling. Accepts any XD source (share URL, direct file URL, or local file path) and an optional artboard name. Automatically routes to the right fetcher: Adobe XD share links (https://xd.adobe.com/view/...) are fetched via the viewer API; other URLs and local .xd file paths are read directly. If artboard_name is omitted, returns the list of artboards so you can pick the right one. If artboard_name is provided, returns full specs: colors (hex + rgba), typography, borders, border-radius, shadows, spacing, and a ready-to-use SCSS snippet.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          xd_source: {
+            type: 'string',
+            description:
+              'Any XD source: a share URL (https://xd.adobe.com/view/<id>/grid), a direct .xd file URL (https://example.com/design.xd), or a local file path (/path/to/design.xd or C:\\designs\\file.xd).',
+          },
+          artboard_name: {
+            type: 'string',
+            description:
+              'Optional. Name of the artboard to extract specs for. Case-insensitive. If omitted, returns the list of available artboards.',
+          },
+        },
+        required: ['xd_source'],
+      },
+    },
+    {
       name: 'list_artboards',
       description:
-        'Lists all artboard names in an Adobe XD file. Use this first to discover what artboards/screens are available before requesting specs.',
+        'Lists all artboard names in an Adobe XD file. Prefer get_specs (without artboard_name) instead — it handles all source types. Use this only when you specifically have a direct .xd file URL or local path and want an explicit list.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -46,7 +69,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: 'get_artboard_specs',
       description:
-        'Extracts detailed styling specifications from a named artboard in an XD file. Returns colors (hex + rgba), typography (font family, size, weight, line-height, letter-spacing), borders, border-radius, shadows, layout dimensions, and a ready-to-use SCSS variable snippet. Use this when updating existing component styles to match the XD design.',
+        'Extracts detailed styling specifications from a named artboard in a local or remotely-hosted .xd file. Prefer get_specs instead — it routes automatically. Use this only when you have a direct .xd file URL or local path and already know the artboard name.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -88,6 +111,27 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ['xd_source'],
       },
     },
+    {
+      name: 'fetch_from_xd_share',
+      description:
+        'Extracts design specs from an Adobe XD share URL via the internal viewer API. Prefer get_specs instead — it routes automatically. Use this only when you specifically have an xd.adobe.com share link and want to call the share API directly.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          xd_share_url: {
+            type: 'string',
+            description:
+              'The Adobe XD share URL. Example: "https://xd.adobe.com/view/abc123/grid"',
+          },
+          artboard_name: {
+            type: 'string',
+            description:
+              'Optional. Name of the artboard to extract specs for. Case-insensitive. If omitted, returns the list of all artboards in the share.',
+          },
+        },
+        required: ['xd_share_url'],
+      },
+    },
   ],
 }));
 
@@ -100,6 +144,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     let result: string;
 
     switch (name) {
+      case 'get_specs':
+        result = await getSpecs({
+          xd_source: args?.xd_source as string,
+          artboard_name: args?.artboard_name as string | undefined,
+        });
+        break;
+
       case 'list_artboards':
         result = await listArtboards({
           xd_source: args?.xd_source as string,
@@ -118,6 +169,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           xd_source: args?.xd_source as string,
           existing_scss_path: args?.existing_scss_path as string | undefined,
           output_scss_path: args?.output_scss_path as string | undefined,
+        });
+        break;
+
+      case 'fetch_from_xd_share':
+        result = await fetchFromXDShare({
+          xd_share_url: args?.xd_share_url as string,
+          artboard_name: args?.artboard_name as string | undefined,
         });
         break;
 

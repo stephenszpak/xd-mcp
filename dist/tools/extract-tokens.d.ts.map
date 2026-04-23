@@ -1,0 +1,1 @@
+{"version":3,"file":"extract-tokens.d.ts","sourceRoot":"","sources":["../../src/tools/extract-tokens.ts"],"names":[],"mappings":"AAOA,MAAM,WAAW,kBAAkB;IACjC,SAAS,EAAE,MAAM,CAAC;IAClB,kBAAkB,CAAC,EAAE,MAAM,CAAC;IAC5B,gBAAgB,CAAC,EAAE,MAAM,CAAC;CAC3B;AAED,wBAAsB,aAAa,CAAC,KAAK,EAAE,kBAAkB,GAAG,OAAO,CAAC,MAAM,CAAC,CAgF9E"}
