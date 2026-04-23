@@ -1,0 +1,29 @@
+{
+  "name": "adobe-xd-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for extracting styling specs and design tokens from Adobe XD files",
+  "main": "dist/index.js",
+  "bin": {
+    "adobe-xd-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js"
+  },
+  "keywords": ["mcp", "adobe-xd", "design-tokens", "scss"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "adm-zip": "^0.5.17",
+    "fuse.js": "^7.3.0",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.8",
+    "@types/node": "^25.6.0",
+    "@types/node-fetch": "^2.6.13",
+    "typescript": "^6.0.3"
+  }
+}
