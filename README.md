@@ -17,8 +17,8 @@ This MCP exposes three tools to Cursor's AI:
 ### 1. Clone and build
 
 ```bash
-git clone <your-repo-url> adobe-xd-mcp
-cd adobe-xd-mcp
+git clone <your-repo-url> xd-mcp
+cd xd-mcp
 npm install
 npm run build
 ```
@@ -32,7 +32,7 @@ Open Cursor settings → MCP → Add server, or edit your `~/.cursor/mcp.json` d
   "mcpServers": {
     "adobe-xd": {
       "command": "node",
-      "args": ["/absolute/path/to/adobe-xd-mcp/dist/index.js"]
+      "args": ["/absolute/path/to/xd-mcp/dist/index.js"]
     }
   }
 }
