@@ -53,6 +53,7 @@ interface ArtworkNode {
     width?: number;
     height?: number;
     fill?: unknown;
+    children?: ArtworkNode[];
   };
 }
 
@@ -177,20 +178,29 @@ export class XDParser {
   }
 
   private parseArtboard(meta: ManifestArtboard): XDArtboard {
-    const entryPath = `${meta.path}`;
-    const entry =
-      this.zip.getEntry(entryPath) ||
-      this.zip.getEntry(`${entryPath}.json`);
+    // Real path inside the zip: artwork/<artboard-path>/graphics/graphicContent.agc
+    const entryPath = `artwork/${meta.path}/graphics/graphicContent.agc`;
+    const entry = this.zip.getEntry(entryPath);
 
     if (!entry) {
       throw new Error(`Artboard file not found in XD zip: ${entryPath}`);
     }
 
     const data = JSON.parse(entry.getData().toString('utf-8')) as ArtworkNode;
-    const artboardNode = data;
+
+    // Root has a `children` array; the first child of type "artboard" holds
+    // the dimensions and its own children under child.artboard.children.
+    const artboardChild = (data.children || []).find((c) => c.type === 'artboard');
+    const artboardNode = artboardChild ?? data;
 
     const width = artboardNode.artboard?.width || artboardNode.shape?.width || 0;
     const height = artboardNode.artboard?.height || artboardNode.shape?.height || 0;
+
+    // Children live under artboard.children when the artboard child is present
+    const childNodes =
+      artboardChild?.artboard?.children ??
+      artboardNode.children ??
+      [];
 
     return {
       id: meta.id,
@@ -200,7 +210,7 @@ export class XDParser {
       background: artboardNode.artboard?.fill
         ? this.parseFill(artboardNode.artboard.fill)
         : undefined,
-      children: this.parseChildren(artboardNode.children || []),
+      children: this.parseChildren(childNodes),
     };
   }
 
@@ -302,7 +312,18 @@ export class XDParser {
   private parseColor(color: unknown): XDColor {
     const c = color as Record<string, unknown>;
 
-    // XD stores colors as { value: 0xAARRGGBB } or { r, g, b, a }
+    // Real XD format: { mode: "RGB", value: { r, g, b }, alpha: 0–1 }
+    if (c['mode'] && typeof c['value'] === 'object' && c['value'] !== null) {
+      const v = c['value'] as Record<string, unknown>;
+      return {
+        r: (v['r'] as number) ?? 0,
+        g: (v['g'] as number) ?? 0,
+        b: (v['b'] as number) ?? 0,
+        a: (c['alpha'] as number) !== undefined ? (c['alpha'] as number) : 1,
+      };
+    }
+
+    // Legacy packed format: { value: 0xAARRGGBB }
     if (typeof c['value'] === 'number') {
       const val = c['value'] as number;
       const a = ((val >> 24) & 0xff) / 255;
@@ -312,6 +333,7 @@ export class XDParser {
       return { r, g, b, a };
     }
 
+    // Flat { r, g, b, a }
     return {
       r: (c['r'] as number) || 0,
       g: (c['g'] as number) || 0,
